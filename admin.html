@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#14100d">
+<link rel="stylesheet" href="theme.css?v=3">
+<script src="theme.js?v=3"></script>
+<title>Yönetim Paneli · Mobile2 Pazar</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:radial-gradient(1200px 600px at 50% -200px,var(--glow),var(--bg));color:var(--text);font:15px/1.5 system-ui,'Segoe UI',sans-serif;min-height:100vh;padding-bottom:60px}
+.wrap{width:min(1320px,94%);margin:0 auto}
+.top{position:sticky;top:0;z-index:20;background:var(--hdr);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;justify-content:space-between;height:54px;gap:8px}
+.bar b{color:var(--gold2);font-size:1.05rem}
+button,input,select,textarea{font:inherit;color:inherit}
+a.btn{text-decoration:none;display:inline-block}
+.btn{border:1px solid var(--line);background:var(--panel2);padding:9px 14px;border-radius:var(--r);cursor:pointer;font-weight:700}
+.btn:hover{border-color:var(--gold)}.btn:disabled{opacity:.5}
+.btn.gold{background:linear-gradient(180deg,var(--gold2),var(--gold));color:var(--on-gold);border-color:var(--gold)}
+.btn.sm{padding:6px 10px;font-size:.8rem}.btn.bad{color:var(--bad)}.btn.ok{color:var(--ok)}
+input,select,textarea{width:100%;padding:9px 11px;background:var(--input);border:1px solid var(--line);border-radius:var(--r)}
+textarea{resize:vertical}
+input:focus,select:focus,textarea:focus{border-color:var(--gold);outline:none}
+input[type=checkbox]{width:auto}
+label{display:block;font-size:.78rem;color:var(--mute)}
+label input,label select,label textarea{margin-top:3px;color:var(--text)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:12px 0;scrollbar-width:none}
+.chip{flex:0 0 auto;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--mute);font-weight:700;cursor:pointer;white-space:nowrap}
+.chip[aria-selected=true]{background:var(--panel2);color:var(--gold2);border-color:var(--gold)}
+h3{font-size:1rem;color:var(--gold2);margin:16px 0 8px}
+.card{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:14px;padding:12px;margin-bottom:10px;display:flex;flex-direction:column;gap:8px}
+.head{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.price{color:var(--ok);font-weight:800;white-space:nowrap}
+.mut{color:var(--mute);font-size:.85rem;word-break:break-word}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chk{display:flex;gap:8px;align-items:center;color:var(--text);font-size:.9rem}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center;font-size:.8rem;color:var(--mute)}
+.stat b{display:block;font-size:1.5rem;color:var(--gold2)}
+.setrow .lbl{font-weight:600}.setrow .ctl{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.setrow .ctl input,.setrow .ctl textarea{flex:1;min-width:140px}
+.sw{min-width:92px;padding:8px 14px;border-radius:999px;border:1px solid var(--bad);background:transparent;color:var(--bad);font-weight:800;cursor:pointer}
+.sw.on{border-color:var(--ok);color:var(--bg);background:var(--ok)}
+.tag{display:inline-block;padding:2px 8px;border-radius:7px;border:1px solid var(--line);background:var(--panel2);font-size:.75rem;margin-right:4px}
+.tag.red{color:var(--bad);border-color:var(--bad)}.tag.grn{color:var(--ok);border-color:var(--ok)}
+.c2{display:inline-flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:3px 4px 3px 10px;margin:3px;font-size:.85rem}
+.c2 button{background:none;border:none;color:var(--bad);cursor:pointer;font-size:1rem;padding:0 6px}
+.empty{text-align:center;color:var(--mute);padding:26px;border:1px dashed var(--line);border-radius:14px}
+.gate{max-width:380px;margin:60px auto}
+.err{color:var(--bad);font-size:.85rem;min-height:1.2em}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:50;background:var(--panel2);border:1px solid var(--gold);padding:10px 16px;border-radius:999px;font-weight:700;opacity:0;pointer-events:none;transition:.25s;max-width:92vw;text-align:center}
+#toast.on{opacity:1}
+.hide{display:none!important}
+.qr{background:#fff;padding:8px;border-radius:10px;align-self:flex-start;max-width:220px}.qr img{width:100%;display:block}
+code{background:var(--input);padding:2px 6px;border-radius:6px;word-break:break-all}
+.shell{display:block}
+@media(min-width:900px){
+  .shell{display:grid;grid-template-columns:230px 1fr;gap:22px;align-items:start}
+  #nav{flex-direction:column;overflow:visible;position:sticky;top:70px;padding:16px 0}
+  #nav .chip{text-align:left;border-radius:12px;padding:10px 14px}
+  .stats{grid-template-columns:repeat(4,1fr)}
+}
+.stat[data-go]{cursor:pointer}.stat[data-go]:hover{border-color:var(--gold)}
+.chart{display:flex;align-items:flex-end;gap:5px;height:130px}
+.bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:3px}
+.bar i{display:block;width:100%;background:linear-gradient(var(--gold2),var(--gold));border-radius:5px 5px 0 0}
+.bar small{font-size:.6rem;color:var(--mute)}
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:8px}
+.slotc{border:1px dashed var(--line);border-radius:10px;padding:8px;text-align:center;font-size:.8rem;color:var(--mute);display:flex;flex-direction:column;gap:2px;position:relative;word-break:break-all}
+.slotc b{color:var(--text)}.slotc.used{border-style:solid;border-color:var(--warn);color:var(--text)}
+.slotc button{background:none;border:none;color:var(--bad);cursor:pointer;position:absolute;top:2px;right:4px;font-size:1rem}
+.adprev{max-width:100%;max-height:90px;border-radius:8px;border:1px solid var(--line)}
+@media(min-width:1100px){.g3{display:grid;grid-template-columns:1fr 1fr;gap:10px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap bar"><b>🛡 Yönetim Paneli</b><span style="display:flex;gap:6px"><button class="btn sm" id="themeBtn" type="button" aria-label="Tema"></button><a class="btn sm" href="index.html">Siteye dön</a><button class="btn sm hide" id="out">Çıkış</button></span></div></header>
+<main class="wrap">
+  <div id="gate" class="gate"></div>
+  <div id="app" class="hide shell">
+    <nav class="chips" id="nav">
+      <button class="chip" data-s="ozet">📊 Özet</button><button class="chip" data-s="bildirim">📨 Bildirimler</button>
+      <button class="chip" data-s="ilan">📜 İlanlar</button><button class="chip" data-s="kullanici">👥 Kullanıcılar</button>
+      <button class="chip" data-s="oneri">⭐ Öne çıkanlar</button><button class="chip" data-s="premium">💎 Premium pazar</button>
+      <button class="chip" data-s="reklam">📢 Reklamlar</button><button class="chip" data-s="paket">📦 Paketler</button>
+      <button class="chip" data-s="katalog">🗂 Katalog</button><button class="chip" data-s="ayar">⚙️ Ayarlar</button>
+      <button class="chip" data-s="duyuru">📣 Duyurular</button><button class="chip" data-s="guvenlik">🔐 Güvenlik</button>
+      <button class="chip" data-s="kayit">🧾 Kayıt</button>
+    </nav>
+    <div id="main"></div>
+  </div>
+</main>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const sb=supabase.createClient('https://bgugtvlixerwlhrgqmfw.supabase.co','sb_publishable_V11Gt6rJmKP90QQ4G7L-ag_1NpCea-i');
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=n=>Number(n).toLocaleString('tr-TR',{maximumFractionDigits:2});
+const nowIso=()=>new Date().toISOString();
+const dt=s=>s?new Date(s).toLocaleString('tr-TR',{dateStyle:'short',timeStyle:'short'}):'-';
+const clean=s=>String(s||'').trim().replace(/[%*,()\\]/g,' ').replace(/\s+/g,' ');
+let toastT;const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),3000)};
+const log=(a,d)=>sb.from('admin_log').insert([{action:a,detail:String(d||'').slice(0,300)}]).then(()=>{},()=>{});
+
+let OF={};
+let user=null,SEC='ozet',SET=[],PL={},FBF='yeni',CATSUB='item',LST='all',LQ='',UQ='',ENR=null;
+
+const gate=h=>{$('#gate').innerHTML=h;$('#gate').classList.remove('hide');$('#app').classList.add('hide')};
+async function boot(){
+  const {data}=await sb.auth.getSession();user=data.session?.user||null;
+  $('#out').classList.toggle('hide',!user);
+  if(!user)return showLogin();
+  const a=await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+  if(a.data&&a.data.nextLevel==='aal2'&&a.data.currentLevel!=='aal2')return showMfa();
+  const {data:ok}=await sb.rpc('is_admin');
+  if(ok!==true)return gate(`<div class="card"><b>Yetkin yok</b><div class="mut">${esc(user.email)} hesabı yönetici değil ya da 2 adımlı doğrulama gerekiyor.</div></div>`);
+  $('#gate').classList.add('hide');$('#app').classList.remove('hide');go(SEC);
+}
+function showLogin(){
+  gate(`<div class="card"><b>Yönetici girişi</b><label>E-posta<input id="e" type="email" autocomplete="email"></label><label>Şifre<input id="p" type="password" autocomplete="current-password"></label><div class="err" id="ge"></div><button class="btn gold" id="lg">Giriş yap</button></div>`);
+  $('#lg').onclick=async()=>{const {error}=await sb.auth.signInWithPassword({email:$('#e').value.trim(),password:$('#p').value});error?$('#ge').textContent='E-posta veya şifre hatalı.':boot()};
+}
+async function showMfa(){
+  gate(`<div class="card"><b>İki adımlı doğrulama</b><div class="mut">Doğrulayıcı uygulamandaki 6 haneli kodu gir.</div><input id="c" inputmode="numeric" maxlength="6" placeholder="123456"><div class="err" id="ge"></div><button class="btn gold" id="mv">Doğrula</button></div>`);
+  $('#mv').onclick=async()=>{
+    const f=await sb.auth.mfa.listFactors(),fid=f.data?.totp?.[0]?.id;if(!fid)return $('#ge').textContent='Doğrulayıcı bulunamadı.';
+    const ch=await sb.auth.mfa.challenge({factorId:fid});if(ch.error)return $('#ge').textContent=ch.error.message;
+    const v=await sb.auth.mfa.verify({factorId:fid,challengeId:ch.data.id,code:$('#c').value.trim()});
+    v.error?$('#ge').textContent='Kod hatalı.':boot();
+  };
+}
+$('#out').onclick=async()=>{await sb.auth.signOut();boot()};
+
+async function loadSet(){const {data,error}=await sb.from('site_settings').select('*').order('grp').order('sort');if(error)throw error;SET=data}
+const S=k=>SET.find(x=>x.key===k);
+function setRow(k){
+  const s=S(k);if(!s)return '';
+  const ctl=s.kind==='bool'?`<button class="sw ${s.value==='true'?'on':''}" data-a="tog" data-key="${k}">${s.value==='true'?'AÇIK':'KAPALI'}</button>`
+    :s.kind==='int'?`<input type="number" min="1" max="1000" value="${esc(s.value)}"><button class="btn sm gold" data-a="setsave" data-key="${k}">Kaydet</button>`
+    :`<textarea rows="2" maxlength="400">${esc(s.value)}</textarea><button class="btn sm gold" data-a="setsave" data-key="${k}">Kaydet</button>`;
+  return `<div class="card setrow"><div class="lbl">${esc(s.label)}</div><div class="ctl">${ctl}</div></div>`;
+}
+async function banUser(uid,reason){
+  const {error}=await sb.from('banned_users').upsert({user_id:uid,reason:reason||null},{onConflict:'user_id'});
+  if(error)return error;
+  await Promise.all([sb.from('items').delete().eq('user_id',uid),sb.from('yang_listings').delete().eq('user_id',uid)]);
+  log('yasakla',uid+(reason?' · '+reason:''));return null;
+}
+const chips=(items,cur,act)=>`<div class="chips" style="padding-top:0">${items.map(([v,l])=>`<button class="chip" data-a="${act}" data-v="${v}" aria-selected="${v===cur}">${l}</button>`).join('')}</div>`;
+
+const SECS={
+async ozet(){
+  await loadSet();
+  const [s,dl]=await Promise.all([sb.rpc('admin_stats'),sb.rpc('admin_daily',{p_days:14})]);
+  if(s.error)throw s.error;
+  const st=s.data,days=dl.data||[];
+  const bx=(n,l,go)=>`<div class="stat"${go?` data-go="${go}"`:''}><b>${fmt(n||0)}</b>${l}</div>`;
+  const mx=Math.max(1,...days.map(d=>d.n_items+d.n_yang));
+  const bars=days.map(d=>`<div class="bar" title="${d.day}: ${d.n_items} item, ${d.n_yang} yang, ${d.n_users} yeni kullanıcı"><i style="height:${Math.max(Math.round((d.n_items+d.n_yang)/mx*100),2)}%"></i><small>${String(d.day).slice(8)}</small></div>`).join('');
+  const sum=k=>days.reduce((a,d)=>a+d[k],0);
+  const att=[];
+  if(st.feedback)att.push(`<button class="btn sm gold" data-go="bildirim">📨 ${st.feedback} bekleyen bildirim</button>`);
+  if(st.soon)att.push(`<button class="btn sm" data-go="premium">⏳ ${st.soon} premium/reklam kaydı 3 gün içinde bitiyor</button>`);
+  const KEYS=['maintenance','posting_open','signups_open','items_enabled','yang_enabled','featured_enabled','premium_enabled','ads_enabled','feedback_enabled'];
+  return `<div class="stats">${bx(st.users,'Toplam kullanıcı','kullanici')}${bx(st.users7d,'Son 7 gün kayıt','kullanici')}${bx(st.items,'Aktif item ilanı','ilan')}${bx(st.yang,'Aktif yang ilanı','ilan')}${bx(st.new24h,'Son 24 saatte ilan','ilan')}${bx(st.featured,'Öne çıkan ilan','oneri')}${bx(st.rentals,'Kiradaki premium alan','premium')}${bx(st.ads,'Yayındaki reklam','reklam')}${bx(st.adclicks,'Toplam reklam tıklaması','reklam')}${bx(st.paid,'Paketli kullanıcı','kullanici')}${bx(st.feedback,'Bekleyen bildirim','bildirim')}${bx(st.banned,'Yasaklı','kullanici')}</div>
+  <h3>Son 14 gün: açılan ilanlar</h3><div class="card"><div class="chart">${bars}</div><div class="mut">Toplam ${sum('n_items')} item + ${sum('n_yang')} yang ilanı · ${sum('n_users')} yeni kullanıcı</div></div>
+  <h3>Dikkat gerekenler</h3>${att.length?`<div class="acts">${att.join('')}</div>`:'<div class="mut">Şu an bekleyen bir şey yok 🎉</div>'}
+  <h3>Pazar alanları ve anahtarlar</h3><div class="g3">${KEYS.map(setRow).join('')}</div>
+  <h3>Bakım</h3><div class="card"><div class="mut">Süresi dolalı 3 günü geçen ilanları kalıcı olarak siler; siteyi hızlı tutar.</div><div><button class="btn" data-a="cleanup">🧹 Eski ilanları temizle</button></div></div>`;
+},
+async bildirim(){
+  const [fb,pl]=await Promise.all([sb.from('feedback').select('*').eq('status',FBF).order('created_at',{ascending:false}).limit(50),sb.from('plans').select('id,name,duration_days')]);
+  if(fb.error)throw fb.error;
+  PL=Object.fromEntries((pl.data||[]).map(p=>[p.id,p]));
+  const ofr=await sb.from('premium_offers').select('id,days');OF=Object.fromEntries((ofr.data||[]).map(x=>[x.id,x]));
+  const K={hata:'🐞 Hata',oneri:'💡 Öneri',sikayet:'🚩 Şikayet',diger:'💬 Diğer'};
+  const cards=fb.data.map(f=>{
+    let ref='',acts='';
+    if(f.ref&&f.ref.startsWith('plan:')){const p=PL[f.ref.slice(5)];ref=`<div class="mut">Paket talebi: <b>${esc(p?p.name:f.ref)}</b></div>`;
+      if(p&&f.user_id)acts+=`<button class="btn sm gold" data-a="planassign" data-id="${f.id}" data-uid="${f.user_id}" data-plan="${p.id}" data-days="${p.duration_days}">Paketi ata (${p.duration_days} gün)</button>`}
+    else if(f.ref&&f.ref.startsWith('slot:')){const [,pos,oid]=f.ref.split(':'),o=OF[oid],dd=o?o.days:7;ref=`<div class="mut">Premium alan talebi: <b>Alan #${esc(pos)}</b>${o?` · ${dd} gün`:''}</div>`;
+      if(f.user_id)acts+=`<button class="btn sm gold" data-a="slotassign" data-id="${f.id}" data-uid="${f.user_id}" data-pos="${esc(pos)}" data-days="${dd}">Alanı ata (${dd} gün)</button>`}
+    else if(f.ref&&f.ref.startsWith('ad:')){ref=`<div class="mut">Reklam talebi: <b>${esc(f.ref.slice(3))}</b> alanı</div>`;acts+=`<button class="btn sm gold" data-go="reklam">Reklam oluştur</button>`}
+    else if(f.ref){ref=`<div class="mut">İlan: <b>${esc(f.ref.replace('items:','İtem #').replace('yang_listings:','Yang #'))}</b></div>`;
+      acts+=`<button class="btn sm bad" data-a="refdel" data-id="${f.id}" data-ref="${esc(f.ref)}">İlanı sil</button><button class="btn sm bad" data-a="refban" data-id="${f.id}" data-ref="${esc(f.ref)}">Satıcıyı yasakla</button>`}
+    acts+=FBF==='yeni'?`<button class="btn sm ok" data-a="fbset" data-id="${f.id}" data-v="cozuldu">Çözüldü</button>`:`<button class="btn sm" data-a="fbset" data-id="${f.id}" data-v="yeni">Geri aç</button>`;
+    acts+=`<button class="btn sm bad" data-a="fbdel" data-id="${f.id}">Sil</button>`;
+    const meta=[f.view&&'Sekme: '+f.view,f.last_error&&'Hata: '+f.last_error].filter(Boolean).map(esc).join(' · ');
+    return `<div class="card"><div class="head"><b>${K[f.kind]||esc(f.kind)}</b><span class="mut">${dt(f.created_at)}</span></div><div style="white-space:pre-wrap;word-break:break-word">${esc(f.message)}</div>${ref}
+      <div class="mut">${f.contact?'İletişim: <b>'+esc(f.contact)+'</b> · ':''}Kullanıcı: ${f.user_id?esc(f.user_id.slice(0,8))+'…':'misafir'}</div>${meta?`<div class="mut" style="font-size:.75rem">${meta}</div>`:''}<div class="acts">${acts}</div></div>`}).join('');
+  return chips([['yeni','Bekleyen'],['cozuldu','Çözülen']],FBF,'fbf')+(cards||'<div class="empty">Kayıt yok 🎉</div>');
+},
+async ilan(){
+  const now=nowIso();
+  const mk=(t,ex)=>{let q=sb.from(t).select('*').order('created_at',{ascending:false}).limit(40);
+    if(LST==='active')q=q.eq('status','active').gt('expires_at',now);
+    const k=clean(LQ);if(k)q=q.or([`seller_name.ilike.%${k}%`,`contact_info.ilike.%${k}%`,...ex.map(c=>`${c}.ilike.%${k}%`)].join(','));return q};
+  const [a,b]=await Promise.all([mk('items',['item_name']),mk('yang_listings',['server'])]);
+  if(a.error||b.error)throw (a.error||b.error);
+  const lc=(r,t)=>{const y=t==='yang_listings',st=r.status==='sold'?'<span class="tag">Satıldı</span>':new Date(r.expires_at)<new Date()?'<span class="tag red">Süresi doldu</span>':'<span class="tag grn">Aktif</span>';
+    return `<div class="card"><div class="head"><b>${y?`💰 ${fmt(r.amount)}${esc(r.unit)} Yang`:esc(r.item_name)}</b><span class="price">${y?fmt(r.price_tl)+' TL':esc(r.price||'')}</span></div>
+    <div class="mut">${st}${esc(r.server||'')} · ${dt(r.created_at)}</div><div class="mut">${r.seller_name?'Karakter: <b>'+esc(r.seller_name)+'</b> ':''}${r.contact_info?'İletişim: <b>'+esc(r.contact_info)+'</b>':''}</div>
+    <div class="acts"><button class="btn sm bad" data-a="ldel" data-t="${t}" data-id="${r.id}">Sil</button><button class="btn sm bad" data-a="lban" data-uid="${r.user_id}">Satıcıyı yasakla</button></div></div>`};
+  return `<div class="g2" style="margin-bottom:10px"><label>Ara (nick, iletişim, item)<input id="lq" value="${esc(LQ)}"></label><label>Durum<select id="lst"><option value="all" ${LST==='all'?'selected':''}>Hepsi</option><option value="active" ${LST==='active'?'selected':''}>Sadece aktif</option></select></label></div>
+  <button class="btn gold" data-a="lsearch" style="margin-bottom:6px">Ara</button>
+  <h3>İtem ilanları (${a.data.length})</h3>${a.data.map(r=>lc(r,'items')).join('')||'<div class="empty">Yok</div>'}
+  <h3>Yang ilanları (${b.data.length})</h3>${b.data.map(r=>lc(r,'yang_listings')).join('')||'<div class="empty">Yok</div>'}`;
+},
+async kullanici(){
+  const [u,pl]=await Promise.all([sb.rpc('admin_users',{q:UQ||null}),sb.from('plans').select('id,name,duration_days').order('sort')]);
+  if(u.error)throw u.error;
+  const op=(pl.data||[]).map(p=>`<option value="${p.id}" data-d="${p.duration_days}">${esc(p.name)}</option>`).join('');
+  const first=(pl.data||[])[0];
+  const cards=u.data.map(x=>`<div class="card"><div class="head"><b style="word-break:break-all">${esc(x.mail||'(e-postasız)')}</b>${x.is_adm?'<span class="tag grn">Yönetici</span>':''}</div>
+    <div class="mut">Kayıt: ${dt(x.joined)} · Son giriş: ${dt(x.last_login)} · Aktif ilan: <b>${x.active_n}</b></div>
+    <div class="mut">${x.is_ban?'<span class="tag red">Yasaklı</span>':''}${x.plan_name?`<span class="tag grn">📦 ${esc(x.plan_name)}</span>${dt(x.plan_until)} tarihine kadar`:'Paket yok'}</div>
+    ${op?`<div class="g2"><select class="plsel">${op}</select><input class="days" type="number" min="1" max="365" value="${first?first.duration_days:30}" aria-label="Gün"></div>`:'<div class="mut">Önce Paketler bölümünden paket oluştur.</div>'}
+    <div class="acts">${op?`<button class="btn sm gold" data-a="ugrant" data-uid="${x.uid}">Paketi ata</button>`:''}<button class="btn sm" data-a="urevoke" data-uid="${x.uid}">Paketi kaldır</button>
+    ${x.is_adm?'':(x.is_ban?`<button class="btn sm ok" data-a="uunban" data-uid="${x.uid}">Yasağı kaldır</button>`:`<button class="btn sm bad" data-a="uban" data-uid="${x.uid}">Yasakla</button>`)}
+    <button class="btn sm bad" data-a="udel" data-uid="${x.uid}">İlanlarını sil</button></div></div>`).join('');
+  return `<div style="display:flex;gap:8px;margin-bottom:10px"><input id="uq" placeholder="E-posta ara…" value="${esc(UQ)}"><button class="btn gold" data-a="usearch">Ara</button></div>${cards||'<div class="empty">Kullanıcı bulunamadı</div>'}<p class="mut">En yeni 30 kayıt gösterilir.</p>`;
+},
+async katalog(){
+  const sub=chips([['item','⚔️ İtemler'],['efsun','✨ Efsunlar'],['tas','💎 Taşlar']],CATSUB,'catsub');
+  if(CATSUB==='item'){
+    const {data,error}=await sb.from('item_catalog').select('*').order('category').order('name').limit(1000);if(error)throw error;
+    const by={};data.forEach(r=>(by[r.category]=by[r.category]||[]).push(r));
+    return sub+`<div class="card"><b>İtem ekle</b><label>Kategori<input id="cc" list="cl" maxlength="30" placeholder="Silah, Zırh, Kask…"></label><datalist id="cl">${Object.keys(by).map(c=>`<option value="${esc(c)}">`).join('')}</datalist>
+    <label>İtem adları (her satıra bir tane)<textarea id="cn" rows="3" maxlength="800"></textarea></label><div><button class="btn gold" data-a="catadd" data-t="item_catalog">Ekle</button></div></div>`
+    +Object.entries(by).map(([c,r])=>`<h3>${esc(c)} (${r.length})</h3><div>${r.map(x=>`<span class="c2">${esc(x.name)}<button data-a="catdel" data-t="item_catalog" data-id="${x.id}" aria-label="Sil">×</button></span>`).join('')}</div>`).join('');
+  }
+  const t=CATSUB==='efsun'?'efsun_catalog':'stone_catalog',{data,error}=await sb.from(t).select('*').order('name').limit(1000);if(error)throw error;
+  return sub+`<div class="card"><b>${CATSUB==='efsun'?'Efsun':'Taş'} ekle</b><label>Adlar (her satıra bir tane)<textarea id="cn" rows="3" maxlength="800"></textarea></label><div><button class="btn gold" data-a="catadd" data-t="${t}">Ekle</button></div></div>
+  <div>${data.map(x=>`<span class="c2">${esc(x.name)}<button data-a="catdel" data-t="${t}" data-id="${x.id}" aria-label="Sil">×</button></span>`).join('')||'<div class="empty">Liste boş</div>'}</div>`;
+},
+async paket(){
+  const {data,error}=await sb.from('plans').select('*').order('sort').order('listing_limit');if(error)throw error;
+  const form=p=>`<div class="card plan" data-id="${p.id}"><div class="g2"><label>Paket adı<input name="name" maxlength="40" value="${esc(p.name)}"></label><label>Fiyat yazısı<input name="price_text" maxlength="40" placeholder="50 TL" value="${esc(p.price_text||'')}"></label>
+    <label>Aynı anda aktif ilan<input name="listing_limit" type="number" min="1" max="1000" value="${p.listing_limit}"></label><label>Öne çıkarma hakkı<input name="featured_slots" type="number" min="0" max="100" value="${p.featured_slots||0}"></label><label>Süre (gün)<input name="duration_days" type="number" min="1" max="365" value="${p.duration_days}"></label>
+    <label>Sıra<input name="sort" type="number" min="0" max="999" value="${p.sort}"></label><label class="chk" style="margin-top:18px"><input name="active" type="checkbox" ${p.active?'checked':''}> Kullanıcılara göster</label></div>
+    <label>Açıklama<textarea name="description" rows="2" maxlength="200">${esc(p.description||'')}</textarea></label>
+    <div class="acts"><button class="btn sm gold" data-a="plsave">${p.id==='new'?'Paketi ekle':'Kaydet'}</button>${p.id==='new'?'':'<button class="btn sm bad" data-a="pldel">Sil</button>'}</div></div>`;
+  return `<h3>Yeni paket</h3>${form({id:'new',name:'',price_text:'',featured_slots:1,listing_limit:5,duration_days:30,sort:0,active:true,description:''})}<h3>Paketler (${data.length})</h3>${data.map(form).join('')||'<div class="empty">Henüz paket yok</div>'}`;
+},
+async oneri(){
+  const now=nowIso(),mk=t=>sb.from(t).select('*').eq('featured',true).eq('status','active').gt('expires_at',now).order('created_at',{ascending:false}).limit(60);
+  const [a,b]=await Promise.all([mk('items'),mk('yang_listings')]);if(a.error||b.error)throw (a.error||b.error);
+  const row=(r,t)=>`<div class="card"><div class="head"><b>${t==='items'?esc(r.item_name):`💰 ${fmt(r.amount)}${esc(r.unit)} Yang`}</b><span class="mut">${esc(r.server||'')}</span></div><div class="mut">${r.seller_name?'Karakter: <b>'+esc(r.seller_name)+'</b> · ':''}Bitiş: ${dt(r.expires_at)}</div><div class="acts"><button class="btn sm bad" data-a="unfeat" data-t="${t}" data-id="${r.id}">Öne çıkarmayı kaldır</button><button class="btn sm bad" data-a="ldel" data-t="${t}" data-id="${r.id}">Sil</button></div></div>`;
+  return `<h3>İtemler (${a.data.length})</h3><div class="g3">${a.data.map(r=>row(r,'items')).join('')||'<div class="empty">Yok</div>'}</div><h3>Yang (${b.data.length})</h3><div class="g3">${b.data.map(r=>row(r,'yang_listings')).join('')||'<div class="empty">Yok</div>'}</div>`;
+},
+async premium(){
+  await loadSet();
+  const N=Math.max(1,Math.min(100,+(S('premium_slot_count')?S('premium_slot_count').value:20)||20));
+  const [r,o]=await Promise.all([sb.rpc('admin_rentals'),sb.from('premium_offers').select('*').order('sort').order('days')]);
+  if(r.error)throw r.error;if(o.error)throw o.error;
+  const nowT=Date.now(),cur={};r.data.forEach(x=>{if(new Date(x.rstart)<=nowT)cur[x.rpos]=x});
+  const grid=Array.from({length:N},(_,i)=>{const p=i+1,x=cur[p];
+    return x?`<div class="slotc used"><b>#${p}</b><span>${esc(x.rmail||'?')}</span><small>${Math.ceil((new Date(x.rend)-nowT)/864e5)} gün kaldı</small><button data-a="rentdel" data-id="${x.rid}">×</button></div>`
+      :`<div class="slotc"><b>#${p}</b><small>Boş</small></div>`}).join('');
+  const sel=Array.from({length:N},(_,i)=>`<option value="${i+1}">Alan ${i+1}</option>`).join('');
+  const of=p=>`<div class="card offer" data-id="${p.id}"><div class="g2"><label>Ad<input name="name" maxlength="40" value="${esc(p.name)}"></label><label>Fiyat<input name="price_text" maxlength="40" value="${esc(p.price_text||'')}" placeholder="100 TL"></label><label>Süre (gün)<input name="days" type="number" min="1" max="365" value="${p.days}"></label><label>Sıra<input name="sort" type="number" min="0" max="999" value="${p.sort}"></label></div><label class="chk"><input name="active" type="checkbox" ${p.active?'checked':''}> Göster</label><div class="acts"><button class="btn sm gold" data-a="ofsave">${p.id==='new'?'Ekle':'Kaydet'}</button>${p.id==='new'?'':'<button class="btn sm bad" data-a="ofdel">Sil</button>'}</div></div>`;
+  return `<h3>Alanlar (${N}) · ${Object.keys(cur).length} kirada</h3><div class="slots">${grid}</div>
+  <h3>Alan ata (elle)</h3><div class="card"><div class="g2"><label>Alan<select id="gp">${sel}</select></label><label>Gün<input id="gd" type="number" min="1" max="365" value="7"></label></div><label>E-posta<input id="ge" type="email" placeholder="kisi@ornek.com"></label><div><button class="btn gold" data-a="slotgrant">Alanı ata</button></div></div>
+  <h3>Kiralama seçenekleri</h3>${of({id:'new',name:'',price_text:'',days:7,sort:0,active:true})}${o.data.map(of).join('')}`;
+},
+async reklam(){
+  const {data,error}=await sb.from('ads').select('*').order('created_at',{ascending:false}).limit(100);if(error)throw error;
+  const loc=d=>{const x=new Date(d);return new Date(x.getTime()-x.getTimezoneOffset()*60000).toISOString().slice(0,16)};
+  const so=(v,c)=>v===c?'selected':'';
+  const form=a=>`<div class="card adf" data-id="${a.id}"><div class="g2"><label>Alan<select name="slot"><option value="top" ${so('top',a.slot)}>Üst banner</option><option value="feed" ${so('feed',a.slot)}>Liste arası</option><option value="bottom" ${so('bottom',a.slot)}>Alt banner</option></select></label><label>Tür<select name="kind"><option value="text" ${so('text',a.kind)}>Yazı</option><option value="image" ${so('image',a.kind)}>Görsel</option></select></label>
+    <label>Başlık<input name="title" maxlength="60" value="${esc(a.title||'')}"></label><label>Reklam veren<input name="advertiser" maxlength="60" value="${esc(a.advertiser||'')}"></label>
+    <label>Başlangıç<input name="starts_at" type="datetime-local" value="${loc(a.starts_at)}"></label><label>Bitiş<input name="ends_at" type="datetime-local" value="${loc(a.ends_at)}"></label></div>
+    <label>Kısa yazı<input name="body" maxlength="160" value="${esc(a.body||'')}"></label>
+    <label>Görsel adresi (https://…)<input name="image_url" maxlength="500" value="${esc(a.image_url||'')}"></label>
+    <label>Tıklanınca gidilecek adres<input name="link_url" maxlength="500" placeholder="https://" value="${esc(a.link_url||'')}"></label>
+    <label class="chk"><input name="active" type="checkbox" ${a.active?'checked':''}> Yayında</label>
+    ${a.id!=='new'?`<div class="mut">${a.image_url&&/^https:/.test(a.image_url)?`<img class="adprev" src="${esc(a.image_url)}" alt=""><br>`:''}Gösterim: <b>${fmt(a.views)}</b> · Tıklama: <b>${fmt(a.clicks)}</b></div>`:''}
+    <div class="acts"><button class="btn sm gold" data-a="adsave">${a.id==='new'?'Reklamı ekle':'Kaydet'}</button>${a.id==='new'?'':'<button class="btn sm bad" data-a="addel">Sil</button>'}</div></div>`;
+  const nw={id:'new',slot:'top',kind:'text',title:'',advertiser:'',starts_at:nowIso(),ends_at:new Date(Date.now()+30*864e5).toISOString(),body:'',image_url:'',link_url:'',active:true};
+  return `<h3>Yeni reklam</h3>${form(nw)}<h3>Reklamlar (${data.length})</h3><div class="g3">${data.map(form).join('')||'<div class="empty">Henüz reklam yok</div>'}</div>`;
+},
+async ayar(){
+  await loadSet();
+  return [...new Set(SET.map(s=>s.grp))].filter(g=>g!=='Güvenlik').map(g=>`<h3>${esc(g)}</h3>`+SET.filter(s=>s.grp===g&&s.key!=='require_mfa').map(s=>setRow(s.key)).join('')).join('');
+},
+async duyuru(){
+  const {data,error}=await sb.from('site_notice').select('*').order('id',{ascending:false}).limit(30);if(error)throw error;
+  return `<div class="card"><b>Yeni duyuru</b><label>Mesaj<input id="nm" maxlength="200" placeholder="Duyuru metni..."></label><div><button class="btn gold" data-a="ntadd">Yayınla</button></div></div>`
+  +data.map(n=>`<div class="card"><div>${esc(n.message)}</div><div class="mut">${dt(n.created_at)}</div><div class="acts"><button class="btn sm ${n.active?'':'ok'}" data-a="nttog" data-id="${n.id}" data-v="${!n.active}">${n.active?'Kaldır':'Yayına al'}</button><button class="btn sm bad" data-a="ntdel" data-id="${n.id}">Sil</button></div></div>`).join('');
+},
+async kayit(){
+  const {data,error}=await sb.from('admin_log').select('*').order('created_at',{ascending:false}).limit(80);if(error)throw error;
+  return `<h3>Yönetici işlem kaydı</h3>`+(data.map(l=>`<div class="card" style="border-left-color:var(--line)"><div class="head"><b>${esc(l.action)}</b><span class="mut">${dt(l.created_at)}</span></div><div class="mut">${esc(l.detail||'')}</div></div>`).join('')||'<div class="empty">Kayıt yok</div>');
+},
+async guvenlik(){
+  await loadSet();
+  const [a,f]=await Promise.all([sb.auth.mfa.getAuthenticatorAssuranceLevel(),sb.auth.mfa.listFactors()]);
+  const facs=(f.data?.totp||[]).filter(x=>x.status==='verified'),lvl=a.data?.currentLevel;
+  const enr=ENR?`<div class="card"><b>Doğrulayıcıyı bağla</b><div class="mut">QR'ı okut ve kodu gir.</div><div class="qr"><img alt="QR" src="${ENR.qr}"></div><input id="mc" inputmode="numeric" maxlength="6" placeholder="6 haneli kod"><div><button class="btn gold" data-a="mfaverify">Doğrula</button></div></div>`:'';
+  return `<div class="card"><b>2FA Güvenlik</b><div class="mut">Durum: ${facs.length?'Kurulu':'Kurulu değil'}</div>
+   <div class="acts">${facs.length?`<button class="btn sm bad" data-a="mfaremove" data-id="${facs[0].id}">2FA Kaldır</button>`:'<button class="btn sm gold" data-a="mfaenroll">2FA Kur</button>'}</div></div>${enr}${setRow('require_mfa')}`;
+}
+};
+
+const done=async m=>{toast(m);await render()};
+const rd=(b,s)=>b.closest('.card').querySelector(s);
+const ACT={
+async tog(b){
+  const k=b.dataset.key,next=S(k).value==='true'?'false':'true';
+  const {error}=await sb.from('site_settings').update({value:next,updated_at:nowIso()}).eq('key',k);
+  if(error)return toast(error.message);log('ayar',k+' → '+next);done('Kaydedildi.');
+},
+async setsave(b){
+  const k=b.dataset.key,v=rd(b,'input,textarea').value.trim();
+  const {error}=await sb.from('site_settings').update({value:v,updated_at:nowIso()}).eq('key',k);
+  if(error)return toast(error.message);log('ayar',k+' → '+v);done('Kaydedildi.');
+},
+async cleanup(){if(!confirm('Eski ilanlar silinecek?'))return;const {data,error}=await sb.rpc('admin_cleanup');if(error)return toast(error.message);done(`${data} ilan silindi.`)},
+async fbf(b){FBF=b.dataset.v;render()},
+async fbset(b){const {error}=await sb.from('feedback').update({status:b.dataset.v}).eq('id',b.dataset.id);error?toast(error.message):done('Güncellendi.')},
+async fbdel(b){if(!confirm('Silinsin mi?'))return;const {error}=await sb.from('feedback').delete().eq('id',b.dataset.id);error?toast(error.message):done('Silindi.')},
+async refdel(b){
+  const [t,id]=b.dataset.ref.split(':');
+  if(!confirm('Silinsin mi?'))return;const {error}=await sb.from(t).delete().eq('id',id);if(error)return toast(error.message);
+  await sb.from('feedback').update({status:'cozuldu'}).eq('id',b.dataset.id);done('İlan silindi.');
+},
+async refban(b){
+  const [t,id]=b.dataset.ref.split(':');
+  const {data}=await sb.from(t).select('user_id').eq('id',id).maybeSingle();
+  if(!data)return toast('Bulunamadı.');
+  const why=prompt('Sebep:');if(why===null)return;
+  await banUser(data.user_id,why);await sb.from('feedback').update({status:'cozuldu'}).eq('id',b.dataset.id);done('Yasaklandı.');
+},
+async planassign(b){
+  const d=b.dataset,days=+d.days;
+  const {error}=await sb.from('user_plans').insert([{user_id:d.uid,plan_id:+d.plan,expires_at:new Date(Date.now()+days*864e5).toISOString()}]);
+  if(error)return toast(error.message);
+  await sb.from('feedback').update({status:'cozuldu'}).eq('id',d.id);done('Paket atandı.');
+},
+async lsearch(){LQ=$('#lq').value;LST=$('#lst').value;render()},
+async ldel(b){if(!confirm('Silinsin mi?'))return;const {error}=await sb.from(b.dataset.t).delete().eq('id',b.dataset.id);if(error)return toast(error.message);done('Silindi.')},
+async lban(b){const why=prompt('Sebep:');if(why===null)return;await banUser(b.dataset.uid,why);done('Yasaklandı.');},
+async usearch(){UQ=clean($('#uq').value);render()},
+async uban(b){const why=prompt('Sebep:');if(why===null)return;await banUser(b.dataset.uid,why);done('Yasaklandı.');},
+async uunban(b){await sb.from('banned_users').delete().eq('user_id',b.dataset.uid);done('Yasak kaldırıldı.');},
+async ugrant(b){
+  const c=b.closest('.card'),pid=+c.querySelector('.plsel').value,days=+c.querySelector('.days').value;
+  await sb.from('user_plans').insert([{user_id:b.dataset.uid,plan_id:pid,expires_at:new Date(Date.now()+days*864e5).toISOString()}]);
+  done('Paket atandı.');
+},
+async urevoke(b){await sb.from('user_plans').delete().eq('user_id',b.dataset.uid);done('Kaldırıldı.');},
+async udel(b){if(!confirm('Tüm ilanlar silinsin mi?'))return;await Promise.all([sb.from('items').delete().eq('user_id',b.dataset.uid),sb.from('yang_listings').delete().eq('user_id',b.dataset.uid)]);done('İlanlar silindi.');},
+async catsub(b){CATSUB=b.dataset.v;render()},
+async catadd(b){
+  const t=b.dataset.t,names=[...new Set($('#cn').value.split('\n').map(x=>x.trim()).filter(Boolean))];
+  let rows=t==='item_catalog'?names.map(name=>({category:$('#cc').value.trim(),name})):names.map(name=>({name}));
+  await sb.from(t).upsert(rows,{ignoreDuplicates:true});done('Eklendi.');
+},
+async catdel(b){await sb.from(b.dataset.t).delete().eq('id',b.dataset.id);done('Silindi.');},
+async plsave(b){
+  const c=b.closest('.plan'),g=n=>c.querySelector(`[name=${n}]`),id=c.dataset.id;
+  const row={name:g('name').value.trim(),price_text:g('price_text').value.trim()||null,listing_limit:+g('listing_limit').value,featured_slots:+g('featured_slots').value||0,duration_days:+g('duration_days').value,sort:+g('sort').value||0,description:g('description').value.trim()||null,active:g('active').checked};
+  id==='new'?await sb.from('plans').insert([row]):await sb.from('plans').update(row).eq('id',id);
+  done('Kaydedildi.');
+},
+async pldel(b){await sb.from('plans').delete().eq('id',b.closest('.plan').dataset.id);done('Silindi.');},
+async ntadd(){await sb.from('site_notice').insert([{message:$('#nm').value.trim()}]);done('Yayınlandı.');},
+async nttog(b){await sb.from('site_notice').update({active:b.dataset.v==='true'}).eq('id',b.dataset.id);done('Güncellendi.');},
+async ntdel(b){await sb.from('site_notice').delete().eq('id',b.dataset.id);done('Silindi.');},
+async mfaenroll(){
+  const {data}=await sb.auth.mfa.enroll({factorType:'totp',friendlyName:'Yönetici'});
+  ENR={id:data.id,qr:data.totp.qr_code,secret:data.totp.secret};render();
+},
+async mfaverify(){
+  const ch=await sb.auth.mfa.challenge({factorId:ENR.id});
+  await sb.auth.mfa.verify({factorId:ENR.id,challengeId:ch.data.id,code:$('#mc').value.trim()});
+  ENR=null;done('2FA Etkin.');
+},
+async mfaremove(b){await sb.auth.mfa.unenroll({factorId:b.dataset.id});done('Kaldırıldı.');},
+async unfeat(b){await sb.from(b.dataset.t).update({featured:false}).eq('id',b.dataset.id);done('Kaldırıldı.');},
+async slotassign(b){
+  const d=b.dataset;await sb.from('premium_rentals').insert([{pos:+d.pos,user_id:d.uid,ends_at:new Date(Date.now()+(+d.days)*864e5).toISOString()}]);
+  await sb.from('feedback').update({status:'cozuldu'}).eq('id',d.id);done('Atandı.');
+},
+async slotgrant(){
+  const pos=+$('#gp').value,email=$('#ge').value.trim(),days=+$('#gd').value;
+  await sb.rpc('admin_grant_slot',{p_pos:pos,p_email:email,p_days:days});done('Atandı.');
+},
+async rentdel(b){await sb.from('premium_rentals').delete().eq('id',b.dataset.id);done('Boşaltıldı.');},
+async ofsave(b){
+  const c=b.closest('.offer'),g=n=>c.querySelector(`[name=${n}]`),id=c.dataset.id;
+  const row={name:g('name').value.trim(),price_text:g('price_text').value.trim()||null,days:+g('days').value,sort:+g('sort').value||0,active:g('active').checked};
+  id==='new'?await sb.from('premium_offers').insert([row]):await sb.from('premium_offers').update(row).eq('id',id);
+  done('Kaydedildi.');
+},
+async ofdel(b){await sb.from('premium_offers').delete().eq('id',b.closest('.offer').dataset.id);done('Silindi.');},
+async adsave(b){
+  const c=b.closest('.adf'),g=n=>c.querySelector(`[name=${n}]`),id=c.dataset.id;
+  const row={slot:g('slot').value,kind:g('kind').value,title:g('title').value.trim()||null,body:g('body').value.trim()||null,image_url:g('image_url').value.trim()||null,link_url:g('link_url').value.trim(),advertiser:g('advertiser').value.trim()||null,starts_at:new Date(g('starts_at').value).toISOString(),ends_at:new Date(g('ends_at').value).toISOString(),active:g('active').checked};
+  id==='new'?await sb.from('ads').insert([row]):await sb.from('ads').update(row).eq('id',id);
+  done('Kaydedildi.');
+},
+async addel(b){await sb.from('ads').delete().eq('id',b.closest('.adf').dataset.id);done('Silindi.');}
+};
+
+$('#main').addEventListener('click',async e=>{
+  const g=e.target.closest('[data-go]');if(g)return go(g.dataset.go);
+  const b=e.target.closest('[data-a]');if(!b||b.disabled)return;
+  b.disabled=true;try{await ACT[b.dataset.a](b)}catch(err){toast(err.message)}b.disabled=false;
+});
+$('#main').addEventListener('change',e=>{if(e.target.matches('.plsel')){const o=e.target.selectedOptions[0];e.target.closest('.card').querySelector('.days').value=o?o.dataset.d:''}});
+
+async function render(){
+  document.querySelectorAll('#nav .chip').forEach(b=>b.setAttribute('aria-selected',b.dataset.s===SEC));
+  const y=scrollY;$('#main').innerHTML='<div class="empty">Yükleniyor…</div>';
+  try{$('#main').innerHTML=await SECS[SEC]()}catch(e){$('#main').innerHTML=`<div class="card"><b>Hata</b><div class="mut">${esc(e.message)}</div></div>`}
+  scrollTo(0,y);
+}
+function go(s){SEC=s;render()}
+$('#nav').addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(b)go(b.dataset.s)});
+sb.auth.onAuthStateChange(ev=>{if(ev==='SIGNED_OUT')boot()});
+{const tb=$('#themeBtn');tb.textContent=themeLabel();tb.onclick=()=>{cycleTheme();tb.textContent=themeLabel()}}
+boot();
+</script>
+</body>
+</html>
