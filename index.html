@@ -5,225 +5,63 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Mobile2 Global Pazar: Metin2 item ve efsun ilanlarını ara, ilan ver, satıcıyla iletişime geç.">
 <meta name="theme-color" content="#14100d">
-<script src="theme.js?v=3"></script>
+<script src="theme.js?v=4"></script>
 <meta property="og:title" content="Mobile2 Global Pazar">
 <meta property="og:description" content="Mobile2 Global item, efsun ve yang ilanları. Sunucuna göre ara, ilan ver.">
 <meta property="og:type" content="website">
-<meta name="robots" content="index,follow">
 <title>Mobile2 Global Pazar</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link rel="stylesheet" href="theme.css?v=3">
-<link rel="stylesheet" href="style.css?v=3">
+<link rel="stylesheet" href="theme.css?v=4">
+<link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
 <header class="top"><div class="wrap">
   <div class="brand"><span id="brandTxt">⚔️ Mobile2 Pazar</span><small id="brandSub">Item ve efsun ilanları</small></div>
-  <div class="hdr-r"><button class="btn icon" id="themeBtn" type="button" aria-label="Tema değiştir"></button><button class="btn sm" id="fbBtn" aria-label="Geri bildirim gönder">💬<span class="hide-sm"> Geri bildirim</span></button><div id="authBar"></div></div>
+  <div class="hdr-r">
+    <button class="btn icon" id="themeBtn" type="button" aria-label="Tema değiştir"></button>
+    <div id="authBar"></div>
+  </div>
 </div></header>
 
-<div id="maint" class="hide" style="position:fixed;inset:0;z-index:40;background:var(--bg);display:flex;align-items:center;justify-content:center;text-align:center;padding:20px"><div style="max-width:420px"><h1 style="font-size:1.6rem;color:var(--gold2)">🛠 Bakımdayız</h1><p id="maintTxt" style="color:var(--mute);margin:10px 0 16px">Site kısa süreliğine bakımda.</p><button class="btn sm" id="maintLogin">Yönetici girişi</button></div></div>
-<div class="notice hide" id="maintAdmin" style="margin:0;border-radius:0;justify-content:center">🛠 Bakım modu AÇIK: ziyaretçiler siteyi göremiyor, sadece sen görüyorsun.</div>
-<div class="notice hide" id="siteNotice" style="margin:0;border-radius:0;justify-content:center"></div>
 <main class="wrap">
   <section class="hero">
     <h1 id="heroH">Aradığın efsunlu itemi bul.</h1>
-    <p id="heroP">İtem adına, efsuna, artıya ve fiyata göre ara. İlanlar 24 veya 48 saat yayında kalır.</p>
-    <div class="notice"><span id="gameN">🎮 Bu pazar şu an <b>sadece Mobile2 Global</b> için hazırlandı. İleride başka oyunlar da eklenecek. Başka bir oyundan geliyorsan takipte kal.</span></div>
+    <p id="heroP">İtem adına, efsuna, artıya ve fiyata göre ara. İlanlar yayında kalır.</p>
   </section>
 
   <div class="tabs" role="tablist">
     <button class="tab" role="tab" id="tabItems" aria-selected="true">⚔️ İtem</button>
     <button class="tab" role="tab" id="tabYang" aria-selected="false">💰 Yang</button>
-    <button class="tab" role="tab" id="tabFeat" aria-selected="false">⭐ Öne çıkanlar</button>
+    <button class="tab" role="tab" id="tabFeat" aria-selected="false">⭐ Öne Çıkanlar</button>
     <button class="tab" role="tab" id="tabPrem" aria-selected="false">💎 Premium</button>
     <button class="tab hide" role="tab" id="tabMine" aria-selected="false">İlanlarım</button>
-    <button class="tab hide" role="tab" id="tabAdmin" aria-selected="false">🛡 Yönetim paneli</button>
+    <button class="tab hide" role="tab" id="tabAdmin" aria-selected="false">🛡️ Yönetim Paneli</button>
   </div>
 
-  <div id="adTop"></div>
-  <div class="notice hide" id="viewNote"></div>
-  <div class="notice hide" id="quotaBar"><span id="quotaTxt"></span><button class="btn sm" id="moreSlots">📦 Paketler</button></div>
-
   <div class="filters" id="fItems">
-    <div class="full"><label for="fName">İtem adı</label><input id="fName" placeholder="Örn: Zehir Kılıcı" autocomplete="off"></div>
+    <div class="full"><label for="fName">İtem Adı</label><input id="fName" placeholder="Örn: Zehir Kılıcı" autocomplete="off"></div>
     <div class="full"><label for="fEfsun">Efsun</label><input id="fEfsun" placeholder="Örn: Kılıç Savunması" autocomplete="off"></div>
     <div><label for="fCat">Kategori</label><select id="fCat"></select></div>
     <div><label for="fPlus">Artı</label><select id="fPlus"><option value="">Hepsi</option></select></div>
-    <div><label for="fSort">Sırala</label><select id="fSort"><option value="new">En yeni</option><option value="low">Fiyat artan</option><option value="high">Fiyat azalan</option></select></div>
-    <div><label for="fCur">Para birimi</label><select id="fCur"><option value="">Hepsi</option></select></div>
     <div><label for="fSrv">Sunucu</label><select id="fSrv"></select></div>
   </div>
 
   <div class="filters hide" id="fYang">
     <div><label for="fySrv">Sunucu</label><select id="fySrv"></select></div>
     <div><label for="fyUnit">Birim</label><select id="fyUnit"></select></div>
-    <div class="full"><label for="fySort">Sırala</label><select id="fySort"><option value="new">En yeni</option><option value="low">Birim fiyat artan</option><option value="high">Birim fiyat azalan</option></select></div>
   </div>
 
-  <div class="meta"><span id="count"></span><button class="btn sm" id="resetBtn">Filtreleri temizle</button></div>
-  <div class="notice hide" id="mkt"></div>
-  <button class="btn gold hide" id="freshBar" style="width:100%;margin-bottom:10px"></button>
+  <div class="meta"><span id="count"></span><button class="btn sm" id="resetBtn">Filtreleri Temizle</button></div>
+  
   <div id="list" class="grid"></div>
-  <div style="text-align:center;margin-top:14px"><button class="btn hide" id="moreBtn">Daha fazla göster</button></div>
-  <div id="adBottom"></div>
-  <footer><span id="footTxt">Mobile2 Global için hazırlandı. Oyun içi alışverişte dikkatli ol: kimseye şifreni verme, ödemeyi item teslimatıyla birlikte yap.</span><br><button class="btn sm" id="fbLink" style="margin-top:10px">💬 Sorun bildir / öneri gönder</button>
-  <div style="margin-top:10px"><button class="lnk" data-legal="terms">Kullanım şartları</button> · <button class="lnk" data-legal="privacy">Gizlilik</button> · <button class="lnk" data-legal="safety">Güvenlik ipuçları</button></div></footer>
+  <div style="text-align:center;margin-top:20px"><button class="btn hide" id="moreBtn">Daha Fazla Göster</button></div>
 </main>
 
-<button class="btn gold fab" id="newBtn">+ İlan ver</button>
 <div id="toast" role="status" aria-live="polite"></div>
 
-<!-- Giriş / kayıt -->
-<dialog id="authDlg">
-  <h2 id="authTitle">Giriş yap</h2>
-  <div class="modes" id="authModes">
-    <button class="tab" data-mode="in" aria-selected="true">Giriş</button>
-    <button class="tab" data-mode="up" aria-selected="false">Kayıt ol</button>
-  </div>
-  <div id="oauthRow" class="hide"><div class="oauth"><button class="btn" id="goGoogle" type="button"><b>G</b> Google ile devam et</button><button class="btn" id="goDiscord" type="button">🎮 Discord ile devam et</button></div><p class="hint" style="margin-top:0">Devam ederek <button class="lnk" data-legal="terms" type="button">kullanım şartlarını</button> kabul etmiş olursun.</p><div class="or">veya e-posta ile</div></div>
-  <div id="emailRow"><label for="email">E-posta</label><input id="email" type="email" autocomplete="email"></div>
-  <div><label for="pass" id="passLbl">Şifre</label><input id="pass" type="password" autocomplete="current-password" minlength="6"></div>
-  <p class="hint">Şifre en az 6 karakter olmalı.</p>
-  <label id="consentRow" class="hide" style="display:flex;gap:8px;align-items:flex-start;color:var(--text)"><input type="checkbox" id="consent" style="width:auto;margin-top:3px"><span><button class="lnk" data-legal="terms" type="button" style="font-size:.85rem">Kullanım şartlarını</button> ve <button class="lnk" data-legal="privacy" type="button" style="font-size:.85rem">gizlilik bilgilendirmesini</button> okudum, kabul ediyorum.</span></label>
-  <p class="err" id="authErr"></p>
-  <div class="two" style="margin-top:10px">
-    <button class="btn" id="authClose">Vazgeç</button>
-    <button class="btn gold" id="authGo">Giriş yap</button>
-  </div>
-  <button class="btn sm" id="forgot" style="margin-top:10px;border:none;background:none;color:var(--mute)">Şifremi unuttum</button>
-</dialog>
-
-<!-- İlan formu -->
-<dialog id="postDlg">
-  <h2 id="postTitle">Yeni ilan</h2>
-  <p class="hint">Oyun: Mobile2 Global</p>
-  <label for="pSrv">Sunucu</label><select id="pSrv"></select>
-  <div class="two">
-    <div><label for="pCat">Kategori</label><select id="pCat"></select></div>
-    <div><label for="pPlus">Artı</label><select id="pPlus"></select></div>
-  </div>
-  <label for="pName">İtem</label>
-  <select id="pName"></select>
-  <label>Efsunlar (1. ve 2. zorunlu)</label>
-  <div id="efRows"></div>
-  <button class="btn sm" id="addEf" type="button" style="margin-top:8px">+ Efsun ekle</button>
-  <p class="hint">Efsun değeri istenilen aralıkta girilebilir (Örn: 15 veya 2000 HP, 50 STR). En fazla 6 efsun eklenebilir.</p>
-  <div id="stoneBox" class="hide">
-    <label>Taşlar (isteğe bağlı, en fazla 4)</label>
-    <div id="stRows"></div>
-    <button class="btn sm" id="addSt" type="button" style="margin-top:8px">+ Taş ekle</button>
-  </div>
-  <div class="two">
-    <div><label for="pPrice">Fiyat</label><input id="pPrice" type="number" min="1" max="999999999999" step="any" inputmode="decimal" placeholder="Örn: 30"></div>
-    <div><label for="pCur">Para birimi</label><select id="pCur"></select></div>
-  </div>
-  <div class="two">
-    <div><label for="pNick">Karakter adı (isteğe bağlı)</label><input id="pNick" maxlength="16" placeholder="Oyun içi nick" autocomplete="off"></div>
-    <div><label for="pContact">İletişim (isteğe bağlı)</label><input id="pContact" maxlength="40" placeholder="Discord vb." autocomplete="off"></div>
-  </div>
-  <p class="hint">Alıcıların sana ulaşabilmesi için ikisinden en az biri dolu olmalı. Bağlantı (link) yazılamaz.</p>
-  <label for="pDur">İlan süresi</label>
-  <select id="pDur"><option value="24">24 saat</option><option value="48">48 saat</option></select>
-  <p class="err" id="postErr"></p>
-  <div class="two" style="margin-top:10px">
-    <button class="btn" id="postClose">Vazgeç</button>
-    <button class="btn gold" id="postGo">Yayınla</button>
-  </div>
-</dialog>
-
-<dialog id="typeDlg">
-  <h2>Hangi ilanı vermek istiyorsun?</h2>
-  <div class="choice">
-    <button class="btn" id="chItem" type="button"><b>⚔️ İtem ilanı</b><br><small>Efsunlu silah, zırh, takı ve diğer itemler</small></button>
-    <button class="btn" id="chYang" type="button"><b>💰 Yang ilanı</b><br><small>Yang miktarı ve fiyatı ile ilan ver</small></button>
-  </div>
-  <button class="btn" id="typeClose" type="button" style="width:100%">Vazgeç</button>
-</dialog>
-
-<dialog id="yangDlg">
-  <h2 id="yTitle">Yang ilanı</h2>
-  <p class="hint">Oyun: Mobile2 Global</p>
-  <label for="ySrv">Sunucu</label><select id="ySrv"></select>
-  <div class="two">
-    <div><label for="yAmt">Yang miktarı</label><input id="yAmt" type="number" min="0" step="any" inputmode="decimal" placeholder="Örn: 5"></div>
-    <div><label for="yUnit">Birim</label><select id="yUnit"></select></div>
-  </div>
-  <label for="yPrice">Toplam fiyat (TL)</label>
-  <input id="yPrice" type="number" min="0" step="any" inputmode="decimal" placeholder="Örn: 150">
-  <p class="hint" id="yUnitPrice"></p>
-  <div class="two">
-    <div><label for="yNick">Karakter adı (isteğe bağlı)</label><input id="yNick" maxlength="16" autocomplete="off"></div>
-    <div><label for="yContact">İletişim (isteğe bağlı)</label><input id="yContact" maxlength="40" autocomplete="off"></div>
-  </div>
-  <p class="hint">İkisinden en az biri dolu olmalı. Bağlantı (link) yazılamaz.</p>
-  <label for="yDur">İlan süresi</label>
-  <select id="yDur"><option value="24">24 saat</option><option value="48">48 saat</option></select>
-  <p class="err" id="yErr"></p>
-  <div class="two" style="margin-top:10px">
-    <button class="btn" id="yClose" type="button">Vazgeç</button>
-    <button class="btn gold" id="yGo" type="button">Yayınla</button>
-  </div>
-</dialog>
-
-<dialog id="fbDlg">
-  <h2>Geri bildirim</h2>
-  <p class="hint">Hata, öneri ya da şikayetini kısaca yaz. Sayfa ve cihaz bilgisi otomatik eklenir.</p>
-  <label for="fbKind">Konu</label>
-  <select id="fbKind"><option value="hata">🐞 Hata / sorun</option><option value="oneri">💡 Öneri</option><option value="sikayet">🚩 İlan şikayeti</option><option value="diger">Diğer</option></select>
-  <p class="hint hide" id="fbRefTxt"></p>
-  <label for="fbMsg">Mesajın</label>
-  <textarea id="fbMsg" rows="5" maxlength="1000" placeholder="Ne oldu? Hangi adımda oldu? (en az 10 karakter)"></textarea>
-  <label for="fbContact">Dönüş için iletişim (isteğe bağlı)</label>
-  <input id="fbContact" maxlength="60" placeholder="Discord / e-posta" autocomplete="off">
-  <input id="fbHp" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
-  <p class="err" id="fbErr"></p>
-  <div class="two" style="margin-top:10px">
-    <button class="btn" id="fbClose" type="button">Vazgeç</button>
-    <button class="btn gold" id="fbGo" type="button">Gönder</button>
-  </div>
-</dialog>
-
-<dialog id="limitDlg">
-  <h2>İlan hakkı ve paketler</h2>
-  <p class="hint" id="limTxt" style="font-size:.9rem"></p>
-  <div id="planList"></div>
-  <button class="btn gold" id="limitClose" style="width:100%;margin-top:10px">Tamam</button>
-</dialog>
-
-<dialog id="shareDlg">
-  <h2>İlanı paylaş</h2>
-  <p class="hint" id="shTitle"></p>
-  <input id="shUrl" readonly aria-label="Bağlantı">
-  <div class="shr">
-    <button class="btn gold hide" id="shNative" type="button">📤 Paylaş…</button>
-    <a class="btn" id="shWa" target="_blank" rel="noopener noreferrer">💬 WhatsApp</a>
-    <a class="btn" id="shTg" target="_blank" rel="noopener noreferrer">✈️ Telegram</a>
-    <button class="btn" id="shDc" type="button">🎮 Discord</button>
-    <button class="btn" id="shIg" type="button">📸 Instagram</button>
-    <button class="btn" id="shCp" type="button">🔗 Linki kopyala</button>
-  </div>
-  <p class="hint">Discord ve Instagram web'den doğrudan paylaşım vermez: link kopyalanır, sen yapıştırırsın.</p>
-  <button class="btn" id="shClose" type="button" style="width:100%">Kapat</button>
-</dialog>
-
-<dialog id="viewDlg"><div id="viewBody"></div><button class="btn" id="viewClose" type="button" style="width:100%;margin-top:10px">Kapat</button></dialog>
-
-<dialog id="rentDlg">
-  <h2>💎 Premium alan kirala</h2>
-  <p class="hint" id="rentTxt"></p>
-  <div id="rentList"></div>
-  <button class="btn" id="rentClose" type="button" style="width:100%;margin-top:10px">Vazgeç</button>
-</dialog>
-
-<dialog id="legalDlg">
-  <h2 id="legalTitle"></h2>
-  <div id="legalBody" class="legal"></div>
-  <button class="btn gold" id="legalClose" style="width:100%;margin-top:12px">Tamam</button>
-</dialog>
-
-<script src="app.js?v=3"></script>
+<script src="app.js?v=4"></script>
 </body>
 </html>
