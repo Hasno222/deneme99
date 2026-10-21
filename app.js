@@ -1,5 +1,5 @@
-const SUPABASE_URL='https://bgugtvlixerwlhrgqmfw.supabase.co';
-const SUPABASE_ANON_KEY='sb_publishable_V11Gt6rJmKP90QQ4G7L-ag_1NpCea-i';
+const SUPABASE_URL='https://nzmvmsqdfgichbhyaoje.supabase.co';
+const SUPABASE_ANON_KEY='sb_publishable_RmmP1iJehqfvSSrklLJCvg_teUEyLkS';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 
 const PAGE=12; let FREE_LIMIT=2;
